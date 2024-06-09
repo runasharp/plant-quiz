@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import plants from './PlantData';
+import './App.css';
 
 const Quiz = () => {
   const [currentPlantIndex, setCurrentPlantIndex] = useState(0);
@@ -9,6 +10,7 @@ const Quiz = () => {
   const [showImage, setShowImage] = useState(true);
   const [isCorrect, setIsCorrect] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [hintIndex, setHintIndex] = useState(0);
 
   const currentPlant = plants[currentPlantIndex];
 
@@ -20,18 +22,14 @@ const Quiz = () => {
 
   const fetchPlantImage = async (latinName) => {
     try {
-      // Search for the plant on Wikipedia
       const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${latinName}&format=json&origin=*`;
       console.log('Searching for:', searchUrl);
       const searchResponse = await axios.get(searchUrl);
       console.log('Search response from Wikipedia:', searchResponse.data);
 
-      // Get the first search result
       const searchResults = searchResponse.data.query.search;
       if (searchResults.length > 0) {
         const pageTitle = searchResults[0].title;
-
-        // Fetch the images for the first search result
         const imagesUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${pageTitle}&prop=images&format=json&origin=*`;
         console.log('Fetching images from:', imagesUrl);
         const imagesResponse = await axios.get(imagesUrl);
@@ -41,10 +39,7 @@ const Quiz = () => {
         const page = Object.values(pages)[0];
 
         if (page && page.images && page.images.length > 0) {
-          // Get the first image URL
           const firstImageTitle = page.images[0].title;
-
-          // Fetch the image URL
           const imageUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${firstImageTitle}&prop=imageinfo&iiprop=url&format=json&origin=*`;
           console.log('Fetching image URL from:', imageUrl);
           const imageResponse = await axios.get(imageUrl);
@@ -85,6 +80,7 @@ const Quiz = () => {
   const nextQuestion = () => {
     setIsCorrect(null);
     setAnswer('');
+    setHintIndex(0);
     const nextIndex = (currentPlantIndex + 1) % plants.length;
     setCurrentPlantIndex(nextIndex);
   };
@@ -93,8 +89,23 @@ const Quiz = () => {
     setShowImage(!showImage);
   };
 
+  const revealHint = () => {
+    let newHintIndex = hintIndex + 1;
+    while (newHintIndex < currentPlant.latinName.length && currentPlant.latinName[newHintIndex] === ' ') {
+      newHintIndex++;
+    }
+    setHintIndex(newHintIndex);
+  };
+
+  const getHint = () => {
+    return currentPlant.latinName
+      .split('')
+      .map((char, index) => (index < hintIndex || char === ' ' ? char : '_'))
+      .join('');
+  };
+
   return (
-    <div>
+    <div className="container">
       <button className="toggle-button" onClick={toggleDisplay}>
         {showImage ? 'Show Name' : 'Show Image'}
       </button>
@@ -120,6 +131,8 @@ const Quiz = () => {
         {isCorrect !== null && (
           <p>{isCorrect ? 'Correct!' : `Wrong! The correct answer is ${currentPlant.latinName}`}</p>
         )}
+        <button onClick={revealHint}>Hint</button>
+        <p className="hint">{getHint()}</p>
         <button onClick={nextQuestion}>Next</button>
       </div>
     </div>
