@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/plant-quiz/static/css/main.9e04e486.css",
-    "main.js": "/plant-quiz/static/js/main.0452c0ad.js",
+    "main.css": "/plant-quiz/static/css/main.0f9b1f53.css",
+    "main.js": "/plant-quiz/static/js/main.16a16883.js",
     "static/js/453.ea483fe4.chunk.js": "/plant-quiz/static/js/453.ea483fe4.chunk.js",
     "index.html": "/plant-quiz/index.html",
-    "main.9e04e486.css.map": "/plant-quiz/static/css/main.9e04e486.css.map",
-    "main.0452c0ad.js.map": "/plant-quiz/static/js/main.0452c0ad.js.map",
+    "main.0f9b1f53.css.map": "/plant-quiz/static/css/main.0f9b1f53.css.map",
+    "main.16a16883.js.map": "/plant-quiz/static/js/main.16a16883.js.map",
     "453.ea483fe4.chunk.js.map": "/plant-quiz/static/js/453.ea483fe4.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.9e04e486.css",
-    "static/js/main.0452c0ad.js"
+    "static/css/main.0f9b1f53.css",
+    "static/js/main.16a16883.js"
   ]
 }
