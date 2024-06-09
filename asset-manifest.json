@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/plant-quiz/static/css/main.e8de4575.css",
+    "main.js": "/plant-quiz/static/js/main.aa874290.js",
+    "static/js/453.ea483fe4.chunk.js": "/plant-quiz/static/js/453.ea483fe4.chunk.js",
+    "index.html": "/plant-quiz/index.html",
+    "main.e8de4575.css.map": "/plant-quiz/static/css/main.e8de4575.css.map",
+    "main.aa874290.js.map": "/plant-quiz/static/js/main.aa874290.js.map",
+    "453.ea483fe4.chunk.js.map": "/plant-quiz/static/js/453.ea483fe4.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e8de4575.css",
+    "static/js/main.aa874290.js"
+  ]
+}
