@@ -5,35 +5,56 @@ import './App.css';
 
 const Quiz = () => {
   const [currentPlantIndex, setCurrentPlantIndex] = useState(0);
+  const [order, setOrder] = useState([...Array(plants.length).keys()]);
   const [answer, setAnswer] = useState('');
   const [score, setScore] = useState(0);
   const [displayMode, setDisplayMode] = useState('both'); // 'both', 'image', or 'name'
   const [isCorrect, setIsCorrect] = useState(null);
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrls, setImageUrls] = useState([]);
   const [hintIndex, setHintIndex] = useState(0);
 
-  const currentPlant = plants[currentPlantIndex];
-
-  useEffect(() => {
-    if (displayMode !== 'name') {
-      fetchPlantImage(currentPlant.latinName, currentPlant.englishName);
+  const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
-  }, [currentPlantIndex, displayMode]);
-
-  const fetchPlantImage = async (latinName, englishName) => {
-    try {
-      const searchResult = await searchImage(latinName);
-      if (!searchResult) {
-        console.warn('No valid image found for Latin name, trying English name:', englishName);
-        await searchImage(englishName);
-      }
-    } catch (error) {
-      console.error('Error fetching the plant image:', error);
-      setImageUrl('');
-    }
+    return array;
   };
 
-  const searchImage = async (name) => {
+  const reverseOrder = () => {
+    setOrder([...order].reverse());
+    setCurrentPlantIndex(0);
+  };
+
+  const randomizeOrder = () => {
+    setOrder(shuffleArray([...order]));
+    setCurrentPlantIndex(0);
+  };
+
+  const resetOrder = () => {
+    setOrder([...Array(plants.length).keys()]);
+    setCurrentPlantIndex(0);
+  };
+
+  const currentPlant = plants[order[currentPlantIndex]];
+
+  useEffect(() => {
+    const fetchAllImages = async () => {
+      const urls = await Promise.all(
+        plants.map(async (plant) => {
+          const latinName = plant.latinName;
+          const englishName = plant.englishName;
+          const url = await fetchPlantImage(latinName) || await fetchPlantImage(englishName) || await fetchFallbackImage(latinName);
+          return url || '';
+        })
+      );
+      setImageUrls(urls);
+    };
+
+    fetchAllImages();
+  }, []);
+
+  const fetchPlantImage = async (name) => {
     try {
       const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${name}&format=json&origin=*`;
       const searchResponse = await axios.get(searchUrl);
@@ -48,11 +69,11 @@ const Quiz = () => {
         const page = Object.values(pages)[0];
 
         if (page && page.images && page.images.length > 0) {
-          let imageIndex = 0;
-          let validImageUrl = '';
-
-          while (imageIndex < page.images.length) {
-            const imageTitle = page.images[imageIndex].title;
+          for (let image of page.images) {
+            const imageTitle = image.title;
+            if (imageTitle.toLowerCase().includes('flag') || imageTitle.toLowerCase().includes('logo')) {
+              continue; // Skip unwanted images
+            }
             const imageUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${imageTitle}&prop=imageinfo&iiprop=url&format=json&origin=*`;
             const imageResponse = await axios.get(imageUrl);
 
@@ -62,36 +83,29 @@ const Quiz = () => {
             if (imagePage && imagePage.imageinfo && imagePage.imageinfo.length > 0) {
               const url = imagePage.imageinfo[0].url;
               if (!url.endsWith('.svg')) {
-                validImageUrl = url;
-                break;
+                return url;
               }
             }
-            imageIndex++;
           }
-
-          if (validImageUrl) {
-            setImageUrl(validImageUrl);
-            return true;
-          } else {
-            console.warn('No valid image URL found for:', pageTitle);
-            setImageUrl('');
-            return false;
-          }
-        } else {
-          console.warn('No images found for:', pageTitle);
-          setImageUrl('');
-          return false;
         }
-      } else {
-        console.warn('No search results found for:', name);
-        setImageUrl('');
-        return false;
       }
     } catch (error) {
       console.error('Error fetching the plant image:', error);
-      setImageUrl('');
-      return false;
     }
+    return null;
+  };
+
+  const fetchFallbackImage = async (name) => {
+    try {
+      const fallbackUrl = `https://api.example.com/search?query=${name}`;
+      const response = await axios.get(fallbackUrl);
+      if (response.data && response.data.results && response.data.results.length > 0) {
+        return response.data.results[0].imageUrl;
+      }
+    } catch (error) {
+      console.error('Error fetching fallback image:', error);
+    }
+    return null;
   };
 
   const checkAnswer = () => {
@@ -138,31 +152,36 @@ const Quiz = () => {
 
   return (
     <div className="container">
-      <div>
-        <button
-          className={`toggle-button ${displayMode === 'both' ? 'selected' : 'not-selected'}`}
-          onClick={() => setDisplayMode('both')}
-        >
-          Both
-        </button>
-        <button
-          className={`toggle-button ${displayMode === 'image' ? 'selected' : 'not-selected'}`}
-          onClick={() => setDisplayMode('image')}
-        >
-          Image Only
-        </button>
-        <button
-          className={`toggle-button ${displayMode === 'name' ? 'selected' : 'not-selected'}`}
-          onClick={() => setDisplayMode('name')}
-        >
-          Name Only
-        </button>
-      </div>
+      <header className="header">
+        <div className="header-grid">
+          <button
+            className={`toggle-button ${displayMode === 'both' ? 'selected' : 'not-selected'}`}
+            onClick={() => setDisplayMode('both')}
+          >
+            Both
+          </button>
+          <button
+            className={`toggle-button ${displayMode === 'image' ? 'selected' : 'not-selected'}`}
+            onClick={() => setDisplayMode('image')}
+          >
+            Image Only
+          </button>
+          <button
+            className={`toggle-button ${displayMode === 'name' ? 'selected' : 'not-selected'}`}
+            onClick={() => setDisplayMode('name')}
+          >
+            Name Only
+          </button>
+          <button onClick={resetOrder}>Normal Order</button>
+          <button onClick={randomizeOrder}>Randomize</button>
+          <button onClick={reverseOrder}>Reverse</button>
+        </div>
+      </header>
       <h1>Plant Quiz</h1>
       <p>Score: {score}</p>
       {displayMode !== 'name' && (
-        imageUrl ? (
-          <img src={imageUrl} alt={currentPlant.englishName} style={{ width: '300px', height: '300px' }} />
+        imageUrls[order[currentPlantIndex]] ? (
+          <img src={imageUrls[order[currentPlantIndex]]} alt={currentPlant.englishName} style={{ width: '300px', height: '300px' }} />
         ) : (
           <p>Loading image...</p>
         )

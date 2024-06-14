@@ -16,7 +16,38 @@ body {
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   width: 90%; /* Make container responsive */
-  max-width: 400px; /* Maximum width for larger screens */
+  max-width: 400px; /* Maximum width for larger screens
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  margin-bottom: 1em;
+}
+
+.display-options, .order-options {
+  display: flex;
+  gap: 5px; /* Reduced gap */
+}
+
+.toggle-button, .order-options button {
+  padding: 5px 10px;
+  font-size: 0.8em; /* Smaller font size */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-button.selected {
+  background-color: #61dafb;
+  color: #282c34;
+}
+
+.toggle-button.not-selected {
+  background-color: transparent;
+  border: 2px solid #61dafb;
+  color: #61dafb;
 }
 
 h1 {
@@ -59,26 +90,6 @@ button {
 
 button:hover {
   background-color: #21a1f1;
-}
-
-.toggle-button {
-  padding: 0.5em 1em;
-  border: none;
-  border-radius: 5px;
-  margin: 0.3em;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.toggle-button.selected {
-  background-color: #61dafb;
-  color: #282c34;
-}
-
-.toggle-button.not-selected {
-  background-color: transparent;
-  border: 2px solid #61dafb;
-  color: #61dafb;
 }
 
 .hint {
