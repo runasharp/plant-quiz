@@ -12,6 +12,7 @@ const Quiz = () => {
   const [isCorrect, setIsCorrect] = useState(null);
   const [imageUrls, setImageUrls] = useState([]);
   const [hintIndex, setHintIndex] = useState(0);
+  const [dropdownIndex, setDropdownIndex] = useState(-1); // -1 will represent "All"
 
   const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
@@ -121,8 +122,16 @@ const Quiz = () => {
     setIsCorrect(null);
     setAnswer('');
     setHintIndex(0);
-    const nextIndex = (currentPlantIndex + 1) % plants.length;
+    const nextIndex = (currentPlantIndex + 1) % order.length;
     setCurrentPlantIndex(nextIndex);
+  };
+
+  const previousQuestion = () => {
+    setIsCorrect(null);
+    setAnswer('');
+    setHintIndex(0);
+    const prevIndex = (currentPlantIndex - 1 + order.length) % order.length;
+    setCurrentPlantIndex(prevIndex);
   };
 
   const toggleDisplay = () => {
@@ -150,6 +159,46 @@ const Quiz = () => {
       .join('');
   };
 
+  const handleDropdownChange = (e) => {
+    const newDropdownIndex = parseInt(e.target.value);
+    setDropdownIndex(newDropdownIndex);
+    if (newDropdownIndex === -1) {
+      setOrder([...Array(plants.length).keys()]);
+    } else {
+      const newOrder = plants.slice(newDropdownIndex * 10, (newDropdownIndex + 1) * 10).map((_, index) => index + newDropdownIndex * 10);
+      setOrder(newOrder);
+    }
+    setCurrentPlantIndex(0);
+  };
+
+  const getDropdownOptions = () => {
+    const options = [
+      <option key={-1} value={-1}>
+        All
+      </option>
+    ];
+    for (let i = 0; i < plants.length; i += 10) {
+      options.push(
+        <option key={i / 10} value={i / 10}>
+          {`List ${i / 10 + 1}`}
+        </option>
+      );
+    }
+    return options;
+  };
+
+  useEffect(() => {
+    if (dropdownIndex === -1) {
+      console.log('Selected All:', plants);
+      setOrder([...Array(plants.length).keys()]);
+    } else {
+      const selectedPlants = plants.slice(dropdownIndex * 10, (dropdownIndex + 1) * 10);
+      console.log(`Selected List ${dropdownIndex + 1}:`, selectedPlants);
+      setOrder(selectedPlants.map((_, index) => index + dropdownIndex * 10));
+    }
+    setCurrentPlantIndex(0);
+  }, [dropdownIndex]);
+
   return (
     <div className="container">
       <header className="header">
@@ -175,10 +224,13 @@ const Quiz = () => {
           <button onClick={resetOrder}>Normal Order</button>
           <button onClick={randomizeOrder}>Randomize</button>
           <button onClick={reverseOrder}>Reverse</button>
+          <select onChange={handleDropdownChange} value={dropdownIndex}>
+            {getDropdownOptions()}
+          </select>
         </div>
       </header>
       <h1>Plant Quiz</h1>
-      <p>Score: {score}</p>
+     <p>Score: {score}</p>
       {displayMode !== 'name' && (
         imageUrls[order[currentPlantIndex]] ? (
           <img src={imageUrls[order[currentPlantIndex]]} alt={currentPlant.englishName} style={{ width: '300px', height: '300px' }} />
@@ -200,6 +252,7 @@ const Quiz = () => {
         )}
         <button onClick={revealHint}>Hint</button>
         <p className="hint">{getHint()}</p>
+        <button onClick={previousQuestion}>Back</button>
         <button onClick={nextQuestion}>Next</button>
       </div>
     </div>
